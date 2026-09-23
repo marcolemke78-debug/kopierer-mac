@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Fahrplan: Kopierer Lehrerzimmer auf dem Mac</title>
+<style>
+  @page{size:A4;margin:0}
+  html,body{margin:0;padding:0;background:#fff}
+  body{font:11.5pt/1.45 Arial,Helvetica,sans-serif;color:#1c1f26}
+  .page{width:210mm;height:297mm;padding:16mm 18mm;overflow:hidden;box-sizing:border-box}
+  h1{font-size:22pt;line-height:1.15;margin:0 0 4px;color:#156082}
+  .sub{margin:0 0 14px;color:#555}
+  h2{font-size:13pt;margin:0 0 6px;color:#156082}
+  .box{border:1px solid #d5dae2;border-radius:8px;padding:10px 14px;margin:0 0 11px}
+  ul{margin:0;padding-left:18px} li{margin:2px 0}
+  .steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 0 11px}
+  .step{border:1px solid #d5dae2;border-radius:8px;padding:10px 12px}
+  .num{display:inline-block;width:26px;height:26px;border-radius:50%;background:#156082;color:#fff;font-weight:bold;text-align:center;line-height:26px;margin-bottom:6px}
+  .step strong{display:block;margin-bottom:3px}
+  .step p{margin:0;font-size:10.5pt}
+  kbd{font:9.5pt Menlo,monospace;border:1px solid #bbb;border-bottom-width:2px;border-radius:4px;padding:0 4px;background:#f4f5f7}
+  .url{font-size:15pt;font-weight:bold;color:#156082;margin:4px 0 8px;word-break:break-all}
+  .cmd{font:8.3pt Menlo,monospace;background:#1c1f26;color:#e8ecf1;border-radius:6px;padding:8px 10px;white-space:nowrap;margin:4px 0 0}
+  .hint{font-size:10pt;color:#555;margin:6px 0 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .foot{font-size:9.5pt;color:#777;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Kopierer Lehrerzimmer auf dem Mac einrichten</h1>
+  <p class="sub">Drucken, Heften und Lochen aus jedem Programm. Dauert etwa 5 Minuten, einmalig.</p>
+
+  <div class="box">
+    <h2>Das brauchst du</h2>
+    <ul>
+      <li>deinen Mac, mit Internet</li>
+      <li>deine <strong>Konto-ID</strong> vom Kopierer (die Nummer, die du am Gerät eintippst)</li>
+      <li>dein <strong>Mac-Passwort</strong> (das beim Anmelden)</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h2>Diese Seite auf dem Mac öffnen</h2>
+    <div class="url">marcolemke78-debug.github.io/kopierer-mac</div>
+    <p class="hint" style="margin:0">Dort steht die Zeile aus Schritt 2 mit einem Kopieren-Button. Zur Sicherheit auch hier:</p>
+    <div class="cmd">bash -c "$(curl -fsSL https://marcolemke78-debug.github.io/kopierer-mac/install.sh)"</div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="num">1</span><strong>Terminal öffnen</strong><p><kbd>⌘</kbd> + <kbd>Leertaste</kbd>, „Terminal“ tippen, <kbd>Enter</kbd>.</p></div>
+    <div class="step"><span class="num">2</span><strong>Zeile kopieren</strong><p>Auf der Seite oben den Button „Zeile kopieren“ klicken.</p></div>
+    <div class="step"><span class="num">3</span><strong>Einfügen, Enter</strong><p><kbd>⌘</kbd> + <kbd>V</kbd> im Terminal, dann <kbd>Enter</kbd>. Der Rest läuft geführt ab.</p></div>
+  </div>
+
+  <div class="two">
+    <div class="box">
+      <h2>Das fragt dich das Skript</h2>
+      <ul>
+        <li><strong>Konto-ID</strong> eintippen, <kbd>Enter</kbd>, bestätigen.</li>
+        <li><strong>Mac-Passwort</strong> eintippen. Beim Tippen erscheint nichts, das ist normal. <kbd>Enter</kbd>.</li>
+        <li>Beim ersten Mal lädt es den Kyocera-Treiber (ca. 100 MB), das dauert ein paar Minuten.</li>
+        <li>Am Ende steht: <strong>✔ „Kopierer Lehrerzimmer“ ist eingerichtet.</strong></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>So druckst du ab jetzt</h2>
+      <ul>
+        <li><kbd>⌘</kbd> + <kbd>P</kbd></li>
+        <li>Drucker <strong>Kopierer Lehrerzimmer</strong> wählen</li>
+        <li>Menü <strong>Voreinstellungen</strong>: <strong>Heften + Lochen</strong> oder <strong>Nur lochen</strong></li>
+        <li>Drucken</li>
+      </ul>
+      <p class="hint">Für normale Ausdrucke wieder auf <strong>Standardeinstellungen</strong> stellen, sonst wird weiter geheftet. Der Kopierer geht nur im Schul-WLAN.</p>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:11px">
+    <h2>Wenn etwas hakt</h2>
+    <ul>
+      <li><strong>Nach Enter passiert nichts:</strong> Internet prüfen, Zeile noch einmal komplett kopieren (Button, nicht abtippen).</li>
+      <li><strong>Rote Meldung mit ✖:</strong> Foto an Marco. Die Zeile kann jederzeit gefahrlos noch einmal ausgeführt werden.</li>
+      <li><strong>Kopierer meldet „falsche ID“:</strong> Konto-ID war vertippt. Zeile erneut ausführen und die ID neu eingeben.</li>
+    </ul>
+  </div>
+
+  <p class="foot">Stand 23.09.2026 · Das Skript ist im Klartext lesbar: marcolemke78-debug.github.io/kopierer-mac/install.sh</p>
+</div>
+</body>
+</html>
