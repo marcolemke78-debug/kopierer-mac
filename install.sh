@@ -8,6 +8,7 @@
 #  Was das Skript macht:
 #    1. Konto-ID abfragen
 #    2. Kyocera-Treiber installieren (falls noch nicht vorhanden)
+#       + Vorschalt-Filter gegen „Filter failed“ beim Drucken aus Safari
 #    3. Druckerbeschreibung (PPD) mit der Konto-ID erzeugen
 #    4. Drucker „Kopierer Lehrerzimmer“ anlegen, Heften + Lochen freischalten
 #    5. Voreinstellungen „Heften + Lochen“ und „Nur lochen“ anlegen
@@ -32,6 +33,8 @@ TREIBER_DMG="${HOME}/Downloads/Kyocera_Mac_Driver.dmg"
 TREIBER_PPD="/Library/Printers/PPDs/Contents/Resources/Kyocera TASKalfa 6054ci.PPD"
 TREIBER_FILTER="/usr/libexec/cups/filter/kyofilter_F"
 TREIBER_SIGNATUR="Developer ID Installer: Kyocera Document Solutions Inc."
+VORSCHALT_DIR="/Library/Printers/Kyocera/KopiererLehrerzimmer"
+VORSCHALT_FILTER="${VORSCHALT_DIR}/kyofilter_F_mit_name"
 PRESET_DOMAIN="com.apple.print.custompresets.forprinter.${QUEUE}"
 
 # Farben nur, wenn die Ausgabe in ein Terminal geht
@@ -128,14 +131,42 @@ else
   ok "Treiber installiert."
 fi
 
+# --- 2b. Vorschalt-Filter gegen „Filter failed“ ------------------------------
+# kyofilter_F stürzt ab, wenn ein Auftrag keinen Namen mitbringt
+# (Safari lässt com.apple.print.JobInfo.PMJobName bei manchen Seiten weg).
+# Der Vorschalt-Filter ergänzt den Namen und ruft dann den Kyocera-Filter auf.
+schritt "Schutz gegen „Filter failed“ beim Drucken aus Safari"
+cat > "${TMP}/vorschalt-filter" <<'SH'
+#!/bin/bash
+# Vorschalt-Filter für kyofilter_F (eingerichtet von kopierer-mac/install.sh).
+# kyofilter_F stürzt ab, wenn die Option com.apple.print.JobInfo.PMJobName fehlt.
+# Fehlt sie, wird sie hier aus dem Auftragstitel ergänzt.
+optionen="$5"
+case " ${optionen}" in
+  *" com.apple.print.JobInfo.PMJobName="*) ;;
+  *)
+    name=$(printf '%s' "${3:-Dokument}" | LC_ALL=C tr -c 'A-Za-z0-9._-' '_')
+    optionen="${optionen} com.apple.print.JobInfo.PMJobName=${name:-Dokument}"
+    ;;
+esac
+exec -a "$0" /usr/libexec/cups/filter/kyofilter_F "$1" "$2" "$3" "$4" "${optionen}" ${6+"$6"}
+SH
+info "Falls der Mac nach deinem Passwort fragt: eingeben und Enter."
+sudo install -d -o root -g wheel -m 755 "${VORSCHALT_DIR}" \
+  && sudo install -o root -g wheel -m 755 "${TMP}/vorschalt-filter" "${VORSCHALT_FILTER}" \
+  || fehler "Vorschalt-Filter konnte nicht installiert werden."
+ok "Vorschalt-Filter installiert."
+
 # --- 3. Druckerbeschreibung (PPD) mit Konto-ID bauen -------------------------
 # Änderungen gegenüber der Kyocera-PPD:
 #   - Kyocera-Fenster („Druckbedienung“) aus dem Druckdialog entfernen
 #   - Konto-ID als Standard setzen und in BEIDE Auswahlmöglichkeiten schreiben
+#   - Vorschalt-Filter statt kyofilter_F aufrufen
 schritt "Druckerbeschreibung mit Konto-ID ${KONTO_ID}"
 PPD="${TMP}/${QUEUE}.ppd"
-awk -v id="${KONTO_ID}" '
+awk -v id="${KONTO_ID}" -v filter="${VORSCHALT_FILTER}" '
   /^\*APDialogExtension:/            { next }
+  /^\*cupsFilter: "application\/vnd.cups-postscript 0 kyofilter_F"$/ { print "*cupsFilter: \"application/vnd.cups-postscript 0 " filter "\""; next }
   /^\*DefaultKmManagment: Default$/  { print "*DefaultKmManagment: MG" id; next }
   /^\*KmManagment Default\/Off: ""$/ { print "*KmManagment Default/Off: \"(" id ") statusdict /setmanagementnumber get exec\""; next }
   /^\*CloseUI: \*KmManagment$/       { print "*KmManagment MG" id "/" id ": \"(" id ") statusdict /setmanagementnumber get exec\"" }
@@ -145,6 +176,7 @@ n=$(grep -c "(${KONTO_ID}) statusdict /setmanagementnumber get exec" "${PPD}")
 [ "${n:-0}" -eq 2 ] || fehler "Konto-ID wurde nicht korrekt eingetragen (${n} statt 2 Stellen). Die Treiberversion passt evtl. nicht."
 grep -q "^\*DefaultKmManagment: MG${KONTO_ID}$" "${PPD}" || fehler "Standardwert für die Konto-ID fehlt."
 grep -q "^\*APDialogExtension" "${PPD}" && fehler "Kyocera-Fenster konnte nicht entfernt werden."
+grep -qF "0 ${VORSCHALT_FILTER}\"" "${PPD}" || fehler "Vorschalt-Filter ist nicht in der Druckerbeschreibung eingetragen."
 ok "Druckerbeschreibung erzeugt."
 
 # --- 4. Drucker anlegen ------------------------------------------------------

@@ -15,7 +15,7 @@ Einrichtung des Kyocera TASKalfa 6054ci im Lehrerzimmer auf einem Mac, inklusive
 ## Was das Skript macht
 
 1. Konto-ID abfragen (nur Ziffern, führende Nullen werden entfernt).
-2. Kyocera Mac Driver installieren, falls er fehlt. Download direkt von Kyocera (US-Seite), Signatur wird vor der Installation geprüft.
+2. Kyocera Mac Driver installieren, falls er fehlt. Download direkt von Kyocera (US-Seite), Signatur wird vor der Installation geprüft. Dazu einen kleinen Vorschalt-Filter nach `/Library/Printers/Kyocera/KopiererLehrerzimmer/` legen (siehe unten).
 3. Aus der Kyocera-PPD eine eigene Druckerbeschreibung erzeugen: Konto-ID als Standard und in beiden Auswahlmöglichkeiten, Kyocera-Fenster aus dem Druckdialog entfernt.
 4. Drucker `Kopierer_Lehrerzimmer` anlegen (Socket, A4, Kassetten 3+4, Finisher DF-7140, Locheinheit). Ein vorhandener Drucker gleichen Namens wird ersetzt.
 5. Voreinstellungen „Heften + Lochen" und „Nur lochen" für den angemeldeten Benutzer anlegen.
@@ -24,6 +24,10 @@ Einrichtung des Kyocera TASKalfa 6054ci im Lehrerzimmer auf einem Mac, inklusive
 ## Warum der Umweg über die PPD
 
 Der Kopierer vergleicht die Konto-ID als Zeichenkette. `(123)` wird angenommen, `(00000123)` wird als „falsche ID" abgelehnt. Genau diese achtstellige Form erzeugt der Kyocera-Druckdialog, wenn man die ID dort einträgt. Deshalb steckt die ID direkt in der Druckerbeschreibung, und das Kyocera-Fenster ist abgeschaltet.
+
+## Warum der Vorschalt-Filter
+
+Der Kyocera-Filter `kyofilter_F` stürzt ab, wenn ein Auftrag keinen Namen mitbringt (`com.apple.print.JobInfo.PMJobName`). Safari lässt diesen Namen bei manchen Seiten weg, der Auftrag hängt dann mit „Filter failed“ bzw. „Data fehlgeschlagen“. Der Vorschalt-Filter ergänzt den fehlenden Namen und ruft danach den Kyocera-Filter unverändert auf. Die Druckerbeschreibung zeigt deshalb auf den Vorschalt-Filter statt auf `kyofilter_F`.
 
 ## Hinweise
 
