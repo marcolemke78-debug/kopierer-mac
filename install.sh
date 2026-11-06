@@ -12,6 +12,7 @@
 #    3. Druckerbeschreibung (PPD) mit der Konto-ID erzeugen
 #    4. Drucker „Kopierer Lehrerzimmer“ anlegen, Heften + Lochen freischalten
 #    5. Voreinstellungen „Heften + Lochen“ und „Nur lochen“ anlegen
+#    5b. Zwei weitere Drucker (Kyocera PA4500x LZ + PC-Raum) per AirPrint
 #    6. Alles prüfen
 #
 #  Hintergrund: Der Kopierer vergleicht die Konto-ID als Zeichenkette.
@@ -71,6 +72,7 @@ cat <<'TXT'
     1. Kyocera-Treiber installieren (falls noch nicht da)
     2. Drucker „Kopierer Lehrerzimmer“ mit deiner Konto-ID anlegen
     3. Voreinstellungen „Heften + Lochen“ und „Nur lochen“
+    + die Drucker „Kyocera PA4500x (1) LZ“ und „(2) PC-Raum“
     4. Alles prüfen
 
   Du brauchst: deine Konto-ID vom Kopierer und dein Mac-Passwort.
@@ -229,9 +231,38 @@ n=$(defaults read "${PRESET_DOMAIN}" com.apple.print.customPresetsInfo 2>/dev/nu
 [ "${n:-0}" -eq 2 ] || fehler "Voreinstellungen wurden nicht gespeichert."
 ok "Voreinstellungen angelegt."
 
+# --- 5b. Weitere Drucker (AirPrint, ohne Treiber und ohne Konto-ID) ---------
+# Zwei Kyocera ECOSYS PA4500x (schwarz-weiß, beidseitig). Angesprochen über
+# ihren Bonjour-Namen + UUID, damit eine neue IP-Adresse nichts kaputt macht.
+# Nicht erreichbar (z. B. außerhalb der Schule) → nur Hinweis, kein Abbruch.
+schritt "Weitere Drucker (Lehrerzimmer + PC-Raum)"
+WEITERE_OK=""
+drucker_airprint() {  # $1 Queue  $2 Anzeigename  $3 Standort  $4 Host  $5 Bonjour-URI
+  if ! ipptool -q -T 5 "ipps://$4.local:443/ipp/print" get-printer-attributes.test >/dev/null 2>&1; then
+    info "„$2“ ist gerade nicht erreichbar – übersprungen (Skript später im Schul-WLAN noch einmal starten)."
+    return 0
+  fi
+  if sudo lpadmin -p "$1" -E -v "$5" -m everywhere -D "$2" -L "$3" \
+       -o PageSize=A4 -o sides=two-sided-long-edge -o printer-is-shared=false >"${TMP}/lpadmin-$1.log" 2>&1; then
+    ok "„$2“ angelegt (A4, beidseitig)."
+    WEITERE_OK="${WEITERE_OK}    · $2"$'\n'
+  else
+    cat "${TMP}/lpadmin-$1.log" >&2
+    info "„$2“ konnte nicht angelegt werden – übersprungen."
+  fi
+}
+drucker_airprint "Kyocera_PA4500x_1" "Kyocera PA4500x (1) LZ" "Lehrerzimmer" "KM43BE0F" \
+  "dnssd://Kyocera%20ECOSYS%20PA4500x._ipps._tcp.local./?uuid=4509a320-0068-00e3-0034-00f91f8e591a"
+drucker_airprint "Kyocera_PA4500x_2" "Kyocera PA4500x (2) PC-Raum" "PC-Raum" "KM43BE07" \
+  "dnssd://Kyocera%20ECOSYS%20PA4500x%20(2)._ipps._tcp.local./?uuid=4509a320-0068-00e3-002c-00f91f8e5912"
+
 # --- 6. Fertig ---------------------------------------------------------------
 schritt "Fertig"
 ok "„${ANZEIGE}“ ist eingerichtet (Konto-ID ${KONTO_ID})."
+if [ -n "${WEITERE_OK}" ]; then
+  info "Außerdem eingerichtet (ohne Heften/Lochen, schwarz-weiß):"
+  printf '%s' "${WEITERE_OK}"
+fi
 cat <<'TXT'
 
   So druckst du ab jetzt:

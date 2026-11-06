@@ -19,6 +19,7 @@ Einrichtung des Kyocera TASKalfa 6054ci im Lehrerzimmer auf einem Mac, inklusive
 3. Aus der Kyocera-PPD eine eigene Druckerbeschreibung erzeugen: Konto-ID als Standard und in beiden Auswahlmöglichkeiten, Kyocera-Fenster aus dem Druckdialog entfernt.
 4. Drucker `Kopierer_Lehrerzimmer` anlegen (Socket, A4, Kassetten 3+4, Finisher DF-7140, Locheinheit). Ein vorhandener Drucker gleichen Namens wird ersetzt.
 5. Voreinstellungen „Heften + Lochen" und „Nur lochen" für den angemeldeten Benutzer anlegen.
+5b. Die beiden Kyocera ECOSYS PA4500x („(1) LZ“, „(2) PC-Raum“) per AirPrint (`-m everywhere`, Bonjour-URI mit UUID) anlegen: A4, beidseitig. Nicht erreichbar → Hinweis, kein Abbruch.
 6. Jeden Schritt selbst prüfen und bei Problemen mit klarer Meldung abbrechen.
 
 ## Warum der Umweg über die PPD
